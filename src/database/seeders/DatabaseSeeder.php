@@ -9,7 +9,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ajoute 20 prestataires fictifs
-        Provider::factory()->count(20)->create();
+        $this->call([
+            ProviderSeeder::class, // <— nom exactement comme ton fichier/classe
+        ]);
     }
 }
