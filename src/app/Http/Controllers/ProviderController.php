@@ -7,9 +7,34 @@ use Illuminate\Http\Request;
 
 class ProviderController extends Controller
 {
-    public function index()
+    /**
+     * Liste paginée + recherche.
+     * GET /api/v1/providers?page=1&per_page=20&q=...
+     */
+    public function index(Request $request)
     {
-        return Provider::latest()->paginate(20);
+        $q = trim((string) $request->query('q', ''));
+        $perPage = (int) $request->query('per_page', 20);
+        $perPage = max(1, min(100, $perPage)); // borne entre 1 et 100
+
+        $query = Provider::query()->latest(); // ORDER BY created_at DESC
+
+        if ($q !== '') {
+            $like = "%{$q}%";
+            $query->where(function ($w) use ($like) {
+                $w->where('name', 'like', $like)
+                    ->orWhere('city', 'like', $like)
+                    ->orWhere('category', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->orWhere('email', 'like', $like);
+            });
+        }
+
+        // appends() conserve les paramètres dans les liens de pagination
+        return $query->paginate($perPage)->appends([
+            'q' => $q,
+            'per_page' => $perPage,
+        ]);
     }
 
     public function store(Request $request)
