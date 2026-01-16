@@ -13,29 +13,29 @@ class ProviderController extends Controller
      */
     public function index(Request $request)
     {
-        $q = trim((string) $request->query('q', ''));
-        $perPage = (int) $request->query('per_page', 20);
-        $perPage = max(1, min(100, $perPage)); // borne entre 1 et 100
+        $q = Provider::query();
 
-        $query = Provider::query()->latest(); // ORDER BY created_at DESC
-
-        if ($q !== '') {
-            $like = "%{$q}%";
-            $query->where(function ($w) use ($like) {
-                $w->where('name', 'like', $like)
-                    ->orWhere('city', 'like', $like)
-                    ->orWhere('category', 'like', $like)
-                    ->orWhere('phone', 'like', $like)
-                    ->orWhere('email', 'like', $like);
+        // filtres optionnels ?search, ?category, ?city
+        if ($s = trim((string) $request->query('search', ''))) {
+            $q->where(function ($qq) use ($s) {
+                $qq->where('name', 'like', "%{$s}%")
+                    ->orWhere('city', 'like', "%{$s}%")
+                    ->orWhere('category', 'like', "%{$s}%");
             });
         }
+        if ($c = trim((string) $request->query('category', ''))) {
+            $q->where('category', $c);
+        }
+        if ($city = trim((string) $request->query('city', ''))) {
+            $q->where('city', $city);
+        }
 
-        // appends() conserve les paramètres dans les liens de pagination
-        return $query->paginate($perPage)->appends([
-            'q' => $q,
-            'per_page' => $perPage,
-        ]);
+        // tri récent + pagination
+        $items = $q->latest()->paginate(20);
+
+        return response()->json($items);
     }
+
 
     public function store(Request $request)
     {

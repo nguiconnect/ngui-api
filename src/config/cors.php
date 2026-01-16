@@ -6,7 +6,6 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Pour le dev : autoriser Vite (localhost ET 127.0.0.1)
     'allowed_origins' => [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
@@ -20,6 +19,5 @@ return [
 
     'max_age' => 0,
 
-    // Laisse à false si tu n'utilises pas les cookies cross-site
     'supports_credentials' => false,
 ];
